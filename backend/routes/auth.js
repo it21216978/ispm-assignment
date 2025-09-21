@@ -22,17 +22,17 @@ router.post('/create-department', verifyToken, requireRole(['SuperAdmin']), auth
 // Create invitation endpoint (SuperAdmin only)
 router.post('/invite', verifyToken, requireRole(['SuperAdmin']), authController.invite);
 
-// Onboarding wizard: Update profile
-router.post('/wizard/profile', verifyToken, requireRole(['SuperAdmin']), authController.wizardProfile);
+// Onboarding wizard: Update profile (allow Pending users during onboarding)
+router.post('/wizard/profile', verifyToken, requireRole(['Pending', 'SuperAdmin']), authController.wizardProfile);
 
-// Onboarding wizard: Complete company setup
-router.post('/wizard/company', verifyToken, requireRole(['SuperAdmin']), authController.wizardCompany);
+// Onboarding wizard: Complete company setup (allow Pending users during onboarding)
+router.post('/wizard/company', verifyToken, requireRole(['Pending', 'SuperAdmin']), authController.wizardCompany);
 
-// Onboarding wizard: Create departments
-router.post('/wizard/departments', verifyToken, requireRole(['SuperAdmin']), authController.wizardDepartments);
+// Onboarding wizard: Create departments (allow Pending users during onboarding)
+router.post('/wizard/departments', verifyToken, requireRole(['Pending', 'SuperAdmin']), authController.wizardDepartments);
 
-// Onboarding wizard: Complete setup
-router.post('/wizard/complete', verifyToken, requireRole(['SuperAdmin']), authController.wizardComplete);
+// Onboarding wizard: Complete setup (allow Pending users during onboarding)
+router.post('/wizard/complete', verifyToken, requireRole(['Pending', 'SuperAdmin']), authController.wizardComplete);
 
 // Token refresh endpoint
 router.post('/refresh', authController.refresh);

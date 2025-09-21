@@ -210,9 +210,14 @@ class AuthService {
   }
 
   async wizardCreateCompany(name, industry, address, employeeCount, userId) {
-    const existingCompany = await prisma.company.findFirst();
-    if (existingCompany) {
-      throw new Error('Company already exists.');
+    // Check if user already has a company assigned
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { companyId: true }
+    });
+
+    if (user.companyId) {
+      throw new Error('User already has a company assigned.');
     }
 
     const company = await prisma.company.create({
