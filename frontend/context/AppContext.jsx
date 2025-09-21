@@ -10,7 +10,7 @@ export const AppProvider = ({ children }) => {
 
     // Create axios instance with base URL
     const api = axios.create({
-        baseURL: 'http://localhost:5000/api', // Adjust if backend port differs
+        baseURL: 'http://localhost:5000', // Adjust if backend port differs
     });
 
     // Add token to requests
@@ -33,7 +33,7 @@ export const AppProvider = ({ children }) => {
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
                     try {
-                        const refreshResponse = await axios.post('http://localhost:5000/api/auth/refresh', {
+                        const refreshResponse = await axios.post('http://localhost:3000/auth/refresh', {
                             refreshToken
                         });
                         const newToken = refreshResponse.data.token;
@@ -76,6 +76,15 @@ export const AppProvider = ({ children }) => {
         setToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+    };
+
+    // Register function
+    const register = (data) => {
+        const { token, refreshToken, user } = data;
+        setToken(token);
+        setUser(user);
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refreshToken);
     };
 
     // Onboard function (for first-time setup or invitation)
@@ -124,6 +133,7 @@ export const AppProvider = ({ children }) => {
         loading,
         login,
         logout,
+        register,
         onboard,
         isAuthenticated,
         hasRole,

@@ -7,8 +7,8 @@ const router = express.Router();
 // Login endpoint
 router.post('/login', authController.login);
 
-// Registration endpoint (SuperAdmin only)
-router.post('/register', verifyToken, requireRole(['SuperAdmin']), authController.register);
+// Registration endpoint
+router.post('/register', authController.register);
 
 // Unified onboarding endpoint
 router.post('/onboard', authController.onboard);
@@ -21,6 +21,9 @@ router.post('/create-department', verifyToken, requireRole(['SuperAdmin']), auth
 
 // Create invitation endpoint (SuperAdmin only)
 router.post('/invite', verifyToken, requireRole(['SuperAdmin']), authController.invite);
+
+// Onboarding wizard: Update profile
+router.post('/wizard/profile', verifyToken, requireRole(['SuperAdmin']), authController.wizardProfile);
 
 // Onboarding wizard: Complete company setup
 router.post('/wizard/company', verifyToken, requireRole(['SuperAdmin']), authController.wizardCompany);

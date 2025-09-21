@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import { AppContext } from '../context/AppContext'
 import ProtectedRoute from '../components/ProtectedRoute'
 import Login from '../pages/Login'
+import Register from '../pages/Register'
 import Onboarding from '../pages/Onboarding'
 import Home from '../pages/Home'
 import About from '../pages/About'
@@ -16,6 +17,7 @@ function App() {
   return (
     <Routes>
       {/* Public routes */}
+      <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/about" element={<About />} />

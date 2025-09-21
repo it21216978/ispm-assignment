@@ -95,34 +95,61 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-6">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">SuperAdmin Dashboard</h1>
-                            <p className="text-gray-600">Welcome, {user?.email}</p>
-                        </div>
-                        <div className="flex space-x-4">
+        <div className="min-h-screen bg-gray-50 flex">
+            {/* Side Navigation */}
+            <nav className="w-64 bg-white shadow-lg flex flex-col min-h-screen">
+                <div className="p-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Admin Panel</h2>
+                    <p className="text-gray-600 text-sm mt-1">Welcome, {user?.name || user?.email}</p>
+                </div>
+                <div className="px-6 space-y-2 flex-1">
+                    <a href="#" className="block px-4 py-2 text-gray-700 bg-gray-100 rounded-md font-medium">
+                        Dashboard
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                        Employees
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                        Departments
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                        Policies
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                        Assessments
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                        Analytics
+                    </a>
+                </div>
+                <div className="p-6">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </nav>
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col min-h-screen">
+                {/* Header */}
+                <header className="bg-white shadow">
+                    <div className="px-6 py-4">
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
                             <button
                                 onClick={() => setShowInviteModal(true)}
                                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                             >
                                 Invite Employee
                             </button>
-                            <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                            >
-                                Logout
-                            </button>
                         </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <main className="flex-1 p-6">
                 {error && (
                     <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                         {error}
@@ -249,7 +276,8 @@ const AdminDashboard = () => {
                         ))}
                     </ul>
                 </div>
-            </main>
+                </main>
+            </div>
 
             {/* Invite Modal */}
             {showInviteModal && (

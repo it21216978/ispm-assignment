@@ -22,20 +22,65 @@ class AuthService {
     return { token, refreshToken, user: { id: user.id, email: user.email, role: user.role } };
   }
 
-  async register(email, password, role = 'Employee', companyId, departmentId) {
+  async register(name, email, password, role, companyId, departmentId) {
+    // Input validation
+    if (!name || !email || !password) {
+      const error = new Error('Name, email, and password are required.');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (!email.includes('@') || !email.includes('.')) {
+      const error = new Error('Invalid email format.');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (password.length < 6) {
+      const error = new Error('Password must be at least 6 characters long.');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    // Determine role: if no company exists, first user is SuperAdmin
+    let userRole = role;
+    if (!userRole) {
+      const existingCompany = await prisma.company.findFirst();
+      userRole = existingCompany ? 'Pending' : 'SuperAdmin';
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role,
-        companyId,
-        departmentId
-      }
-    });
+    try {
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: userRole,
+          companyId,
+          departmentId
+        }
+      });
 
-    return { id: user.id, email: user.email, role: user.role };
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      console.log(token)
+      const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+      return { token, refreshToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+    } catch (error) {
+      if (error.code === 'P2002') {
+        const duplicateError = new Error('Email already exists.');
+        duplicateError.code = 'DUPLICATE_EMAIL';
+        throw duplicateError;
+      } else if (error.code.startsWith('P')) {
+        const dbError = new Error('Database error occurred.');
+        dbError.code = 'DATABASE_ERROR';
+        throw dbError;
+      } else {
+        throw error; // Re-throw unknown errors
+      }
+    }
   }
 
   async onboardWithInvitation(token, password) {
@@ -81,19 +126,20 @@ class AuthService {
     };
   }
 
-  async onboardFirstTime(email, password) {
+  async onboardFirstTime(name, email, password) {
     const existingCompany = await prisma.company.findFirst();
     if (existingCompany) {
       throw new Error('Company already exists. Please use invitation to join.');
     }
 
-    if (!email || !password) {
-      throw new Error('Email and password required for first-time setup.');
+    if (!name || !email || !password) {
+      throw new Error('Name, email and password required for first-time setup.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
+        name,
         email,
         password: hashedPassword,
         role: 'SuperAdmin'
@@ -106,7 +152,7 @@ class AuthService {
     return {
       token: authToken,
       refreshToken,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
       redirect: 'onboarding-wizard'
     };
   }
@@ -154,14 +200,23 @@ class AuthService {
     return { invitation, token: invitationToken };
   }
 
-  async wizardCreateCompany(name, userId) {
+  async wizardUpdateProfile(profileImage, userId) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { profileImage }
+    });
+
+    return user;
+  }
+
+  async wizardCreateCompany(name, industry, address, employeeCount, userId) {
     const existingCompany = await prisma.company.findFirst();
     if (existingCompany) {
       throw new Error('Company already exists.');
     }
 
     const company = await prisma.company.create({
-      data: { name }
+      data: { name, industry, address, employeeCount }
     });
 
     await prisma.user.update({
@@ -189,6 +244,46 @@ class AuthService {
 
   async getUserById(id) {
     return await prisma.user.findUnique({ where: { id } });
+  }
+
+  async onboardSuperAdmin(userId, companyName, departments) {
+    // Check if company already exists
+    const existingCompany = await prisma.company.findFirst();
+    if (existingCompany) {
+      throw new Error('Company already exists.');
+    }
+
+    // Create company
+    const company = await prisma.company.create({
+      data: { name: companyName }
+    });
+
+    // Create departments
+    const createdDepartments = [];
+    for (const deptName of departments) {
+      const dept = await prisma.department.create({
+        data: {
+          name: deptName,
+          companyId: company.id
+        }
+      });
+      createdDepartments.push(dept);
+    }
+
+    // Upgrade user to SuperAdmin and assign to company
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: 'SuperAdmin',
+        companyId: company.id
+      }
+    });
+
+    return {
+      message: 'Onboarding completed successfully.',
+      company,
+      departments: createdDepartments
+    };
   }
 
   async refreshToken(refreshToken) {

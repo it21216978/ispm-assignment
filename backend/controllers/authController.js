@@ -13,27 +13,34 @@ class AuthController {
 
   async register(req, res) {
     try {
-      const { email, password, role = 'Employee', companyId, departmentId } = req.body;
-      const user = await authService.register(email, password, role, companyId, departmentId);
-      res.status(201).json({ message: 'User registered successfully.', user });
+      console.log('Registration request received:', req.body);
+      const { name, email, password } = req.body;
+      const result = await authService.register(name, email, password);
+      console.log('Registration successful for:', email);
+      res.status(201).json(result);
     } catch (error) {
-      if (error.code === 'P2002') {
-        res.status(400).json({ error: 'Email already exists.' });
+      console.error('Registration error:', error.message);
+      if (error.code === 'VALIDATION_ERROR') {
+        res.status(400).json({ error: error.message });
+      } else if (error.code === 'DUPLICATE_EMAIL') {
+        res.status(400).json({ error: error.message });
+      } else if (error.code === 'DATABASE_ERROR') {
+        res.status(500).json({ error: 'Database error occurred. Please try again later.' });
       } else {
-        res.status(500).json({ error: 'Server error.' });
+        res.status(500).json({ error: 'Internal server error.' });
       }
     }
   }
 
   async onboard(req, res) {
     try {
-      const { token, password, email } = req.body;
+      const { token, password, email, name } = req.body;
 
       if (token) {
         const result = await authService.onboardWithInvitation(token, password);
         res.json(result);
       } else {
-        const result = await authService.onboardFirstTime(email, password);
+        const result = await authService.onboardFirstTime(name, email, password);
         res.json(result);
       }
     } catch (error) {
@@ -75,10 +82,20 @@ class AuthController {
     }
   }
 
+  async wizardProfile(req, res) {
+    try {
+      const { profileImage } = req.body;
+      const user = await authService.wizardUpdateProfile(profileImage, req.user.id);
+      res.json({ message: 'Profile updated successfully.', user, nextStep: 'company-details' });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
   async wizardCompany(req, res) {
     try {
-      const { name } = req.body;
-      const company = await authService.wizardCreateCompany(name, req.user.id);
+      const { name, industry, address, employeeCount } = req.body;
+      const company = await authService.wizardCreateCompany(name, industry, address, employeeCount, req.user.id);
       res.json({ message: 'Company created successfully.', company, nextStep: 'create-departments' });
     } catch (error) {
       res.status(400).json({ error: error.message });

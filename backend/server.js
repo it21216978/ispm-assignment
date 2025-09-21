@@ -1,6 +1,9 @@
 const express = require('express');
+const cors = require('cors');
 const { PrismaClient } = require('./generated/prisma');
 const authRoutes = require('./routes/auth');
+const onboardingRoutes = require('./routes/onboarding');
+const adminRoutes = require('./routes/admin');
 const employeeRoutes = require('./routes/employees');
 const policyRoutes = require('./routes/policies');
 const assessmentRoutes = require('./routes/assessments');
@@ -10,10 +13,20 @@ const trainingRoutes = require('./routes/training');
 const app = express();
 const prisma = new PrismaClient();
 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 
 // Auth routes
 app.use('/auth', authRoutes);
+
+// Onboarding routes
+app.use('/onboarding', onboardingRoutes);
+
+// Admin routes
+app.use('/admin', adminRoutes);
 
 // Employee management routes
 app.use('/employees', employeeRoutes);

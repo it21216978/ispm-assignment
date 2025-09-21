@@ -17,6 +17,7 @@ datasource db {
 enum Role {
   SuperAdmin
   Employee
+  Pending
 }
 
 enum InvitationStatus {
@@ -27,8 +28,10 @@ enum InvitationStatus {
 
 model User {
   id              Int              @id @default(autoincrement())
+  name            String?
   email           String           @unique
   password        String
+  profileImage    String?
   role            Role             @default(Employee)
   companyId       Int?
   departmentId    Int?
@@ -46,13 +49,16 @@ model User {
 }
 
 model Company {
-  id          Int          @id @default(autoincrement())
-  name        String
-  users       User[]
-  departments Department[]
-  invitations Invitation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id             Int          @id @default(autoincrement())
+  name           String
+  industry       String?
+  address        String?
+  employeeCount  Int?
+  users          User[]
+  departments    Department[]
+  invitations    Invitation[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Department {
