@@ -1,6 +1,24 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import {
+    Container,
+    Paper,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    Box,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    IconButton,
+    Stepper,
+    Step,
+    StepLabel
+} from '@mui/material';
+import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 
 const Onboarding = () => {
     const [step, setStep] = useState(1);
@@ -126,205 +144,212 @@ const Onboarding = () => {
         'Retail', 'Consulting', 'Real Estate', 'Transportation', 'Other'
     ];
 
+    const steps = ['Profile Setup', 'Company Details', 'Departments'];
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        {step === 1 ? 'Profile Setup' : step === 2 ? 'Company Details' : step === 3 ? 'Departments' : 'Setup Complete'}
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+        <Container component="main" maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 12 }}>
+            <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                    <Typography component="h1" variant="h4" gutterBottom>
+                        {step === 4 ? 'Setup Complete' : steps[step - 1]}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
                         {step === 1 && 'Upload your profile image (optional)'}
                         {step === 2 && 'Enter your company information'}
                         {step === 3 && 'Add departments for your company'}
                         {step === 4 && 'Your setup is complete!'}
-                    </p>
-                    <div className="mt-4 flex justify-center space-x-2">
-                        {[1, 2, 3].map((s) => (
-                            <div
-                                key={s}
-                                className={`w-3 h-3 rounded-full ${s <= step ? 'bg-indigo-600' : 'bg-gray-300'}`}
-                            />
-                        ))}
-                    </div>
-                </div>
+                    </Typography>
+                </Box>
+                <Stepper activeStep={step - 1} sx={{ mb: 4 }}>
+                    {steps.map((label) => (
+                        <Step key={label}>
+                            <StepLabel>{label}</StepLabel>
+                        </Step>
+                    ))}
+                </Stepper>
 
                 {step === 1 && (
-                    <form className="mt-8 space-y-6" onSubmit={handleStep1Submit}>
-                        <div className="flex flex-col items-center space-y-4">
-                            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Box component="form" onSubmit={handleStep1Submit} sx={{ mt: 1 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 96,
+                                    height: 96,
+                                    bgcolor: 'grey.200',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mb: 2
+                                }}
+                            >
                                 {formData.profileImage ? (
-                                    <span className="text-gray-600 text-sm">Image</span>
+                                    <Typography variant="body2" color="text.secondary">Image</Typography>
                                 ) : (
-                                    <span className="text-gray-400 text-2xl">👤</span>
+                                    <Typography variant="h4" color="text.disabled">👤</Typography>
                                 )}
-                            </div>
-                            <div>
-                                <label htmlFor="profileImage" className="cursor-pointer">
-                                    <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
-                                        {formData.profileImage ? 'Change Image' : 'Upload Image'}
-                                    </span>
-                                    <input
-                                        id="profileImage"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                    />
-                                </label>
-                            </div>
+                            </Box>
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="profileImage"
+                                type="file"
+                                onChange={handleImageChange}
+                            />
+                            <label htmlFor="profileImage">
+                                <Button variant="outlined" component="span" startIcon={<CloudUploadIcon />}>
+                                    {formData.profileImage ? 'Change Image' : 'Upload Image'}
+                                </Button>
+                            </label>
                             {formData.profileImage && (
-                                <p className="text-sm text-gray-600">{formData.profileImage}</p>
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                    {formData.profileImage}
+                                </Typography>
                             )}
-                        </div>
-                        <button
+                        </Box>
+                        <Button
                             type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3 }}
                             disabled={loading}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
                             {loading ? 'Updating...' : 'Continue'}
-                        </button>
-                    </form>
+                        </Button>
+                    </Box>
                 )}
 
                 {step === 2 && (
-                    <form className="mt-8 space-y-6" onSubmit={handleStep2Submit}>
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
-                                    Company Name *
-                                </label>
-                                <input
-                                    id="companyName"
-                                    name="companyName"
-                                    type="text"
-                                    required
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    value={formData.companyName}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-                                    Industry
-                                </label>
-                                <select
-                                    id="industry"
-                                    name="industry"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    value={formData.industry}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Select Industry</option>
-                                    {industries.map(ind => (
-                                        <option key={ind} value={ind}>{ind}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                                    Address
-                                </label>
-                                <textarea
-                                    id="address"
-                                    name="address"
-                                    rows={3}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    value={formData.address}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="employeeCount" className="block text-sm font-medium text-gray-700">
-                                    Employee Count
-                                </label>
-                                <input
-                                    id="employeeCount"
-                                    name="employeeCount"
-                                    type="number"
-                                    min="1"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    value={formData.employeeCount}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                        </div>
-                        <button
+                    <Box component="form" onSubmit={handleStep2Submit} sx={{ mt: 1 }}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="companyName"
+                            label="Company Name"
+                            name="companyName"
+                            value={formData.companyName}
+                            onChange={handleInputChange}
+                        />
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="industry-label">Industry</InputLabel>
+                            <Select
+                                labelId="industry-label"
+                                id="industry"
+                                name="industry"
+                                value={formData.industry}
+                                onChange={handleInputChange}
+                                label="Industry"
+                            >
+                                <MenuItem value="">
+                                    <em>Select Industry</em>
+                                </MenuItem>
+                                {industries.map(ind => (
+                                    <MenuItem key={ind} value={ind}>{ind}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            margin="normal"
+                            fullWidth
+                            id="address"
+                            label="Address"
+                            name="address"
+                            multiline
+                            rows={3}
+                            value={formData.address}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            margin="normal"
+                            fullWidth
+                            id="employeeCount"
+                            label="Employee Count"
+                            name="employeeCount"
+                            type="number"
+                            inputProps={{ min: 1 }}
+                            value={formData.employeeCount}
+                            onChange={handleInputChange}
+                        />
+                        <Button
                             type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3 }}
                             disabled={loading}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
                             {loading ? 'Creating...' : 'Continue'}
-                        </button>
-                    </form>
+                        </Button>
+                    </Box>
                 )}
 
                 {step === 3 && (
-                    <form className="mt-8 space-y-6" onSubmit={handleStep3Submit}>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Departments *
-                            </label>
-                            {formData.departments.map((dept, index) => (
-                                <div key={index} className="flex space-x-2">
-                                    <input
-                                        type="text"
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                        placeholder={`Department ${index + 1}`}
-                                        value={dept}
-                                        onChange={(e) => handleDepartmentChange(index, e.target.value)}
-                                    />
-                                    {formData.departments.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeDepartment(index)}
-                                            className="px-3 py-2 text-red-600 hover:text-red-800 text-sm"
-                                        >
-                                            Remove
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={addDepartment}
-                                className="w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                            >
-                                Add Department
-                            </button>
-                        </div>
-                        <button
+                    <Box component="form" onSubmit={handleStep3Submit} sx={{ mt: 1 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            Departments *
+                        </Typography>
+                        {formData.departments.map((dept, index) => (
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <TextField
+                                    fullWidth
+                                    placeholder={`Department ${index + 1}`}
+                                    value={dept}
+                                    onChange={(e) => handleDepartmentChange(index, e.target.value)}
+                                    sx={{ mr: 1 }}
+                                />
+                                {formData.departments.length > 1 && (
+                                    <IconButton
+                                        onClick={() => removeDepartment(index)}
+                                        color="error"
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                )}
+                            </Box>
+                        ))}
+                        <Button
+                            type="button"
+                            fullWidth
+                            variant="outlined"
+                            onClick={addDepartment}
+                            sx={{ mb: 2 }}
+                        >
+                            Add Department
+                        </Button>
+                        <Button
                             type="submit"
+                            fullWidth
+                            variant="contained"
                             disabled={loading}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
                             {loading ? 'Creating...' : 'Continue'}
-                        </button>
-                    </form>
+                        </Button>
+                    </Box>
                 )}
 
                 {step === 4 && (
-                    <div className="mt-8 space-y-6">
-                        <div className="text-center">
-                            <p className="text-green-600 font-medium">Setup completed successfully!</p>
-                        </div>
-                        <button
+                    <Box sx={{ mt: 1 }}>
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                            Setup completed successfully!
+                        </Alert>
+                        <Button
+                            fullWidth
+                            variant="contained"
                             onClick={handleComplete}
                             disabled={loading}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
                             {loading ? 'Completing...' : 'Go to Dashboard'}
-                        </button>
-                    </div>
+                        </Button>
+                    </Box>
                 )}
 
                 {error && (
-                    <div className="text-red-600 text-sm text-center mt-4">
+                    <Alert severity="error" sx={{ mt: 2 }}>
                         {error}
-                    </div>
+                    </Alert>
                 )}
-            </div>
-        </div>
+            </Paper>
+        </Container>
     );
 };
 
