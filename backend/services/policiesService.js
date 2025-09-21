@@ -11,19 +11,12 @@ class PoliciesService {
     });
   }
 
-  async createPolicy(title, content, departmentId, file) {
+  async createPolicy(title, content, departmentId) {
     const policyData = {
       title,
       content,
       departmentId: parseInt(departmentId)
     };
-
-    if (file) {
-      policyData.filePath = file.path;
-      policyData.fileName = file.originalname;
-      policyData.fileSize = file.size;
-      policyData.mimeType = file.mimetype;
-    }
 
     return await prisma.policy.create({
       data: policyData,

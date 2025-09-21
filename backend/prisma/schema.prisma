@@ -74,10 +74,6 @@ model Policy {
   id               Int               @id @default(autoincrement())
   title            String
   content          String?
-  filePath         String?
-  fileName         String?
-  fileSize         Int?
-  mimeType         String?
   departmentId     Int
   department       Department        @relation(fields: [departmentId], references: [id])
   trainingContents TrainingContent[]
@@ -92,10 +88,6 @@ model TrainingContent {
   id        Int      @id @default(autoincrement())
   title     String
   content   String
-  filePath  String?
-  fileName  String?
-  fileSize  Int?
-  mimeType  String?
   policyId  Int
   policy    Policy   @relation(fields: [policyId], references: [id])
   createdAt DateTime @default(now())

@@ -11,19 +11,12 @@ class TrainingService {
     });
   }
 
-  async createTrainingContent(title, content, policyId, file) {
+  async createTrainingContent(title, content, policyId) {
     const trainingData = {
       title,
       content,
       policyId: parseInt(policyId)
     };
-
-    if (file) {
-      trainingData.filePath = file.path;
-      trainingData.fileName = file.originalname;
-      trainingData.fileSize = file.size;
-      trainingData.mimeType = file.mimetype;
-    }
 
     return await prisma.trainingContent.create({
       data: trainingData,
@@ -65,8 +58,6 @@ class TrainingService {
         id: true,
         title: true,
         content: true,
-        filePath: true,
-        fileName: true,
         createdAt: true
       }
     });
