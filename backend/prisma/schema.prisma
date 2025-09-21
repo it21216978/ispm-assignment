@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SuperAdmin
+  Employee
+}
+
+enum InvitationStatus {
+  Pending
+  Accepted
+  Rejected
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  password        String
+  role            Role             @default(Employee)
+  companyId       Int?
+  departmentId    Int?
+  company         Company?         @relation(fields: [companyId], references: [id])
+  department      Department?      @relation(fields: [departmentId], references: [id])
+  results         Result[]
+  performanceData PerformanceData[]
+  invitationsSent Invitation[]     @relation("InvitedBy")
+  notifications   Notification[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([companyId])
+  @@index([departmentId])
+}
+
+model Company {
+  id          Int          @id @default(autoincrement())
+  name        String
+  users       User[]
+  departments Department[]
+  invitations Invitation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Department {
+  id              Int              @id @default(autoincrement())
+  name            String
+  companyId       Int
+  company         Company          @relation(fields: [companyId], references: [id])
+  users           User[]
+  policies        Policy[]
+  performanceData PerformanceData[]
+  invitations     Invitation[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([companyId])
+}
+
+model Policy {
+  id               Int               @id @default(autoincrement())
+  title            String
+  content          String?
+  filePath         String?
+  fileName         String?
+  fileSize         Int?
+  mimeType         String?
+  departmentId     Int
+  department       Department        @relation(fields: [departmentId], references: [id])
+  trainingContents TrainingContent[]
+  assessments      Assessment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([departmentId])
+}
+
+model TrainingContent {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  filePath  String?
+  fileName  String?
+  fileSize  Int?
+  mimeType  String?
+  policyId  Int
+  policy    Policy   @relation(fields: [policyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([policyId])
+}
+
+model Assessment {
+  id         Int        @id @default(autoincrement())
+  title      String
+  policyId   Int?
+  policy     Policy?    @relation(fields: [policyId], references: [id])
+  questions  Question[]
+  results    Result[]
+  scheduledAt DateTime?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([policyId])
+}
+
+model Question {
+  id           Int         @id @default(autoincrement())
+  text         String
+  assessmentId Int
+  assessment   Assessment  @relation(fields: [assessmentId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([assessmentId])
+}
+
+model Result {
+  id           Int         @id @default(autoincrement())
+  userId       Int
+  assessmentId Int
+  score        Float?
+  user         User        @relation(fields: [userId], references: [id])
+  assessment   Assessment  @relation(fields: [assessmentId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([assessmentId])
+  @@unique([userId, assessmentId])
+}
+
+model PerformanceData {
+  id           Int         @id @default(autoincrement())
+  userId       Int?
+  departmentId Int?
+  metric       String
+  value        Float
+  compliance   Boolean     @default(false)
+  date         DateTime    @default(now())
+  user         User?       @relation(fields: [userId], references: [id])
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([departmentId])
+  @@index([metric])
+}
+
+model Invitation {
+  id           Int              @id @default(autoincrement())
+  email        String
+  companyId    Int?
+  departmentId Int?
+  invitedById  Int
+  status       InvitationStatus @default(Pending)
+  invitedBy    User             @relation("InvitedBy", fields: [invitedById], references: [id])
+  company      Company?         @relation(fields: [companyId], references: [id])
+  department   Department?      @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([companyId])
+  @@index([departmentId])
+  @@index([invitedById])
+  @@unique([email, companyId, departmentId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  read      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([read])
+}
